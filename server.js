@@ -1,8 +1,17 @@
 const http = require('http');
 const fs = require('fs');
+const _ = require('lodash');
 
 const server = http.createServer((req, res) => {
-    console.log(req.url);
+    const num = _.random(0, 20);
+    console.log(num);
+
+    const greet = _.once(() => {
+        console.log('hello');
+    });
+
+    greet();
+    greet();
 
     //set header content type
     res.setHeader('Content-Type', 'text/html');
@@ -15,11 +24,15 @@ const server = http.createServer((req, res) => {
             res.statusCode = 200;
             break; 
         case '/about':
-            path += '/about.html';
+            path += '/about-blah.html';
             res.statusCode = 200;
             break;
+        case '/about-me':
+            res.statusCode = 301;
+            res.setHeader('Location', '/about'); //here were redirecting the user to the about page if they try to referene and old link
+            break;
         default:
-            path += '/404.html'
+            path += '/404.html';
             res.statusCode = 404;
             break;
     }
