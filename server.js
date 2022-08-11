@@ -11,14 +11,17 @@ const server = http.createServer((req, res) => {
     let path ='./views';
     switch(req.url) {
         case '/':
-            path += 'index.html'
+            path += '/index.html'
+            res.statusCode = 200;
             break; 
         case '/about':
-            path += 'about.html';
+            path += '/about.html';
+            res.statusCode = 200;
             break;
         default:
-            path += '404.html'
-            break
+            path += '/404.html'
+            res.statusCode = 404;
+            break;
     }
     
     //read and send send html file
