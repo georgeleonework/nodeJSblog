@@ -14,7 +14,7 @@ const server = http.createServer((req, res) => {
     greet();
 
     //set header content type
-    res.setHeader('Content-Type', 'text/html');
+    // res.setHeader('Content-Type', 'text/html'); // we don't need this because it's been streamlined by express
 
     //setting the view routing for when a url is requested
     let path ='./views';
