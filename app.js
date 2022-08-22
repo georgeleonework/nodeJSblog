@@ -9,6 +9,7 @@ const app = express();
 
 //connect to mongodb
 const dbURI = 'mongodb+srv://georgeleone:test1234@cluster0.tdwflkg.mongodb.net/nodeblog?retryWrites=true&w=majority'
+
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result) => app.listen(3000))
     .catch((err) => console.log(err));
@@ -23,8 +24,22 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); //allows us to post requests if we use middleware to accept form data url encoded
 app.use(morgan('dev'));
+app.use((req, res, next) => {
+    res.locals.path = req.path;
+    next();
+});
 
-//mongoose and sandbox routes
+///routes
+
+app.get('/', (req, res) => {
+    res.redirect('/blogs');
+ }); 
+
+app.get('/about', (req, res) => {
+    res.render('about', { title: "About"});
+});
+
+//blog routes
 
 app.get('/add-blog', (req, res) => {
     const blog = new Blog({ //were using the Blog model to crete a new isntanceof the blog document within the code
@@ -52,42 +67,24 @@ app.get('/all-blogs', (req, res) => {
         });
 })
 
-app.get('/single-blog', (req, res) => {
-    Blog.findById('6303a7fad411555f92fba2d6')
-        .then((result) => {
-            res.send(result)
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-})
-
-
-// routes
-
-app.get('/', (req, res) => {
-   res.redirect('/blogs');
-}); 
-
-app.get('/about', (req, res) => {
-    res.render('about', { title: "About"});
-});
-
 // blog routes
-
-app.get('/blogs', (req, res) => {
-    Blog.find().sort({ createdAt: -1 }) //sorting the blogs in descending order whereas 1 would be ascending order
-        .then((result) => { //result is an array of blogs
-            res.render('index', {title: 'All Blogs', blogs: result })
-        })
-        .catch((err) => {
-            console.log(err);
-        })
-})
 
 app.get('/blogs/create', (req, res) => {
     res.render('create', { title: "Create" });
-})
+});
+
+
+app.get('/blogs', (req, res) => {
+    Blog.find().sort({ createdAt: -1 })
+      .then(result => {
+        res.render('index', { blogs: result, title: 'All blogs' });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  });
+
+
 
 //the follow block of code takes anything submitted to the create form and save it to the database
 app.post('/blogs', (req, res) => {
@@ -99,9 +96,32 @@ app.post('/blogs', (req, res) => {
         })
         .catch((err) => {
             console.log(err);
+        });
+});
+
+app.get('/blogs/:id', (req, res) => {  //there needs to be a colon in front of the route paramenter.
+    const id = req.params.id; //we need to first extract the id parameter from the request
+    Blog.findById(id)
+        .then(result => {
+            res.render('details', { blog: result })
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+
+app.delete('/blogs/:id', (req, res) => {
+    const id = req.params.id;
+
+    Blog.findByIdAndDelete(id)
+        .then(result => {
+            res.json({ redirect: '/blogs'})
+        })
+        .catch(err => {
+            console.log(err);
         })
 })
-
 
 //if there is still no match at this point for the request, we will "use" the following function
 ///this is to create middleware and use middleware functions in express
