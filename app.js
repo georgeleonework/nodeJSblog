@@ -1,7 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-const Blog = require('./models/blog');
+const blogRoutes = require('./routes/blogRoutes');
 
 
 //this is an express app
@@ -41,87 +41,8 @@ app.get('/about', (req, res) => {
 
 //blog routes
 
-app.get('/add-blog', (req, res) => {
-    const blog = new Blog({ //were using the Blog model to crete a new isntanceof the blog document within the code
-        title: 'george blog number two',
-        snippet: 'about my new blog',
-        body: 'more about my new blog'
-    });
+app.use('/blogs', blogRoutes);
 
-    blog.save() //were calling a method on the new instance of blog that was just created in the last block of code
-        .then((result) => {
-            res.send(result)
-        })
-        .catch((err) => {
-            console.log(err);
-    });
-});
-
-app.get('/all-blogs', (req, res) => {
-    Blog.find() //finds all of the documents inside of the blog model
-        .then((result) => {
-            res.send(result); 
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-})
-
-// blog routes
-
-app.get('/blogs/create', (req, res) => {
-    res.render('create', { title: "Create" });
-});
-
-
-app.get('/blogs', (req, res) => {
-    Blog.find().sort({ createdAt: -1 })
-      .then(result => {
-        res.render('index', { blogs: result, title: 'All blogs' });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  });
-
-
-
-//the follow block of code takes anything submitted to the create form and save it to the database
-app.post('/blogs', (req, res) => {
-    const blog = new Blog(req.body);
-
-    blog.save()
-        .then((result) => {
-            res.redirect('/blogs');
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-});
-
-app.get('/blogs/:id', (req, res) => {  //there needs to be a colon in front of the route paramenter.
-    const id = req.params.id; //we need to first extract the id parameter from the request
-    Blog.findById(id)
-        .then(result => {
-            res.render('details', { blog: result })
-        })
-        .catch(err => {
-            console.log(err);
-        });
-});
-
-
-app.delete('/blogs/:id', (req, res) => {
-    const id = req.params.id;
-
-    Blog.findByIdAndDelete(id)
-        .then(result => {
-            res.json({ redirect: '/blogs'})
-        })
-        .catch(err => {
-            console.log(err);
-        })
-})
 
 //if there is still no match at this point for the request, we will "use" the following function
 ///this is to create middleware and use middleware functions in express
